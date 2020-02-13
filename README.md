@@ -44,7 +44,7 @@ preprocessed_text = raw_data.lower()
 
 Next, we want to get rid of anything that isn't ascii (standard keyboard alphabet). It'll just confuse the computer, and us for that matter. 
 
-We can do so with *regular expressions*, which are a way of searching for particular sequences within a string. Basically, they're substrings on steroids. The downside is their syntax makes no sense at first glance, but the upside is you can really just look up what to put without needing to memorize it. We can do this using ```import re```.
+We can do so with **regular expressions**, which are a way of searching for particular sequences within a string. Basically, they're substrings on steroids. The downside is their syntax makes no sense at first glance, but the upside is you can really just look up what to put without needing to memorize it. We can do this using ```import re```.
 
 Specifically, we'll be using ```re.sub(text_to_replace, replacement, source)```, which takes what it finds and subtracts it from the original string. This will get rid of our non-ascii values.
 
@@ -57,9 +57,16 @@ Don't worry about the syntax for that. When you go to make your own program, you
 Continuing on, we want to extract the characters of the text, sort them, and assign an ID to them. By doing this, we can have an organized record of each character. 
 
 Our plan to do this is as follows:
-1. Cast ```preprocessed_text``` into a set. A set is a list of *unique* elements
+1. Cast ```preprocessed_text``` into a set. 
+    - A set is a list of **unique** elements; an element will not be added to a set if the set already contains it will not be added.
+    - What this means for our text is that each of the characters will be added to the set. If it's already seen the character, it won't add it to the set. Thus, we'll get a master list of the characters that appear in the text
+2. Cast ```set(preprocessed_text)``` into a list.
+  - As useful as sets are to fill a list, once we've filled it, we'd rather work with a list.
+3. Sort our ```list(set(preprocessed_text))```
+  - Like I said, we want the IDs to be organized. We had better sort our resulting list.
 
 ```
-# First, create a set of chars
-chars = set(preprocessed_text))
+chars_set = set(preprocessed_text)
+chars_list = list(set(preprocessed_text))
+chars_list_sorted = chars_list.sort()
 ```

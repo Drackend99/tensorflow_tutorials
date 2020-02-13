@@ -61,12 +61,40 @@ Our plan to do this is as follows:
     - A set is a list of **unique** elements; an element will not be added to a set if the set already contains it will not be added.
     - What this means for our text is that each of the characters will be added to the set. If it's already seen the character, it won't add it to the set. Thus, we'll get a master list of the characters that appear in the text
 2. Cast ```set(preprocessed_text)``` into a list.
-  - As useful as sets are to fill a list, once we've filled it, we'd rather work with a list.
+    - As useful as sets are to fill a list, once we've filled it, we'd rather work with a list.
 3. Sort our ```list(set(preprocessed_text))```
-  - Like I said, we want the IDs to be organized. We had better sort our resulting list.
+    - Like I said, we want the IDs to be organized. We had better sort our resulting list.
 
 ```
 chars_set = set(preprocessed_text)
 chars_list = list(set(preprocessed_text))
 chars_list_sorted = chars_list.sort()
 ```
+
+Now that we've got our list of characters that appear in the text, we can form 2 dictionaries: one for converting a character into its ID, and one for converting an ID into its character.
+
+We can use some advanced python to make this nice and simple, through ```enumerate```. As you may know, python has two types of for loops: 
+1. One for iterating through items: ```for item in list```
+2. One for iterating through indices: ```for i in len(list)```
+
+```Enumerate``` simply combines the two: ```for i, item in enumerate(list)```
+
+One more concept to make this even easier is called **list comprehension**. You've probably seen it before:
+```list = [x for i in range(5)]```
+All this does is allow you to fill a list (or any other collection) without needing to write out the whole for loop. The above command is equivelant to:
+```
+list = []
+for i in range(5):
+    list.append(i)
+```
+Please don't use list as your variable name though. That'll cause you many problems. Anyway, back to the task at hand.
+
+We can combine these two concepts to fill our dictionaries. We can use the ```dict()``` function to create it:
+
+```
+char2index = dict((char, index) for char, index in enumerate(char_list_sorted))
+index2char = dict((index, char) for char, index in enumerate(char_list_sorted))
+```
+
+We defined the ```(key, value)``` of our dictionary to be either ```(char, index)``` or ```(index, char)```. We fill it by iterating through our ```char_list_sorted```.
+

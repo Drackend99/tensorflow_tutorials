@@ -26,7 +26,7 @@ To start, add ```import requests``` to your imports. ```requests``` is a standar
 data = requests.get("https://data.heatonresearch.com/data/t81-558/text/treasure_island.txt")
 ```
 
-We're going to want to get the text from her, rather than the raw byte data, so lets go ahead and covert that:
+We're going to want to get the text from here, rather than the raw byte data, so lets go ahead and covert that:
 
 ```
 raw_data = data.text
@@ -42,7 +42,7 @@ Our first step is to make everything lower case. Why? It's easier.
 preprocessed_text = raw_data.lower()
 ```
 
-Next, we want to get rid of anything that isn't ascii (standard keyboard alphabet). It'll just confuse the computer, and us for that matter. 
+Next, we want to get rid of anything that isn't ascii (standard keyboard alphabet). It'll just confuse the computer if we leave it in, and us too for that matter. 
 
 We can do so with **regular expressions**, which are a way of searching for particular sequences within a string. Basically, they're substrings on steroids. The downside is their syntax makes no sense at first glance, but the upside is you can really just look up what to put without needing to memorize it. We can do this using ```import re```.
 
@@ -170,13 +170,13 @@ We'll add two layers here. The first will be an LSTM layer, whose input shape wi
 We can use the hyper-parameters (things you set at the beginning of a network) straight from Keras's examples.
 
 ```
-model.add(LSTM(128, input_shape=(max_length, len(chars_list_sorted))))
-model.add(Dense(len(chars_list_sorted), activation='softmax'))
+model.add(keras.layers.LSTM(128, input_shape=(max_length, len(chars_list_sorted))))
+model.add(keras.layers.Dense(len(chars_list_sorted), activation='softmax'))
 ```
 Additionally, we can add some standard Tensorflow mumbo-jumbo to optimize it and finally compile it.
 
 ```
-optimizer = RMSprop(lr=0.01)
+optimizer = keras.optimizers.RMSprop(lr=0.01)
 model.compile(loss='categorical_crossentropy', optimizer=optimizer)
 ```
 And our model is made!
@@ -185,6 +185,27 @@ And our model is made!
 
 Our final stop is to actually train the model. To do this, we'll first need to build the method that actually generates the new text. Then, we can have it generate text and minimize the error in its generation.
 
-The LSTM will create new text character by character.
+The LSTM will create new text character by character. Each time it creates a new character, we'll want to sample the correct letter from. Our ```sample``` method will have two parameters:
+1. ```predictions```: The output neurons
+2. ```confidence```: The LSTM's confidence in its error. Note that while 1.0 is the most confident, 0.0 has more variety. It will produce some grammatical errors, but will give more novel results
 
+Our sample function will essentially perform a **softmax** on the neural network's predictions. Thus, each output neuron becomes a **probability** of its letter. This is mostly just a math formula (the softmax), so it's not really important to understand the code here.
 
+```
+def sample(predictions, confidence=1.0):
+    predictions = np.asarray(predictions).astype('float64')
+    predictions = np.log(predictions) / confidence
+    exp_predictions = np.exp(predictions)
+    predictions = exp_predictions / np.sum(exp_predictions)
+    probabilities = np.random.multinomial(1, predictions, 1)
+    return np.argmax(probabilities)
+```
+
+Next we can make the generator itself. It will be invoked at the end of an epoch.
+
+```
+def generate(epoch, _):
+    start_index = random.randint(0, len(preprocessed_text) - max_length - 1)
+    
+    for confidence in 
+```

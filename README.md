@@ -98,3 +98,30 @@ index2char = dict((index, char) for char, index in enumerate(char_list_sorted))
 
 We defined the ```(key, value)``` of our dictionary to be either ```(char, index)``` or ```(index, char)```. We fill it by iterating through our ```char_list_sorted```.
 
+## Step 3: Building Sequences
+
+Now that we've defined our "dictionary" (literally!) of characters, we can build sequences of these characters.
+
+In standard neural networks, we have x (input) and y (output). However, here we will be using something called **LSTM**, or long short-term memory. For LSTMs, x and y will be **sequences**. The x input will specify the sequences where the y sequences are the expected output.
+
+First, we will need to define our sequence size. We will be grabbing 40-character blocks:
+```
+max_length = 40
+```
+Our program will be given 40 characters, and try to guess the next character. We'll use 40 *real* characters as a seed to start our newly-generated article.
+
+We'll also set a step size, equal to 3. This means the for every 40-character block you grab, move forward 3 charcters. In other words, there will be 37-character overlap between each block. This small step size allows for better learning of context.
+
+```
+step_size = 3
+```
+From here, we can begin to generate our sequences. We'll make two lists to fill.
+- ```sentences```: The 40-block of characters
+- ```next_chars```: start of next
+
+```
+sentences = []
+next_chars = []
+for i in range(0, len(preprocessed_text) - max_length, step):
+    sentences.append(preprocessed_text[i:i+maxlen])
+    next_chars.append(preprocessed_text[i+maxlen])

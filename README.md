@@ -4,7 +4,7 @@ As you go, be sure to install any dependencies you're missing with pip3, since w
 
 ## Table of Contents
 
-# Tutorial 1: Text Generation
+# Tutorial 1: Text Generation with LSTMs
 
 ## Step 0: Imports
 
@@ -49,7 +49,7 @@ We can do so with **regular expressions**, which are a way of searching for part
 Specifically, we'll be using ```re.sub(text_to_replace, replacement, source)```, which takes what it finds and subtracts it from the original string. This will get rid of our non-ascii values.
 
 ```
-preprocessed_text = re.sub(r'\x00-\x7f]', r'', preprocessed_text)
+preprocessed_text = re.sub(r'[^\x00-\x7f]', r'', preprocessed_text)
 ```
 
 Don't worry about the syntax for that. When you go to make your own program, you can just figure out what you need.
@@ -99,7 +99,7 @@ index2char = dict((index, char) for char, index in enumerate(chars_list_sorted))
 
 We defined the ```(key, value)``` of our dictionary to be either ```(char, index)``` or ```(index, char)```. We fill it by iterating through our ```char_list_sorted```.
 
-## Step 3: Building Sequences
+## Step 3: Generating our data
 
 Now that we've defined our "dictionary" (literally!) of characters, we can build sequences of these characters.
 
@@ -117,12 +117,52 @@ We'll also set a step size, equal to 3. This means the for every 40-character bl
 step_size = 3
 ```
 From here, we can begin to generate our sequences. We'll make two lists to fill.
-- ```sentences```: The 40-block of characters
-- ```next_chars```: start of next
+- ```sentences```: The block of 40 characters
+- ```next_char```: The letter that the current block ends right before. It will represent the difference between this block and the next, but we'll get more into that later.
 
 ```
 sentences = []
-next_chars = []
+next_char = []
 for i in range(0, len(preprocessed_text) - max_length, step_size):
     sentences.append(preprocessed_text[i:i+max_length])
     next_chars.append(preprocessed_text[i+max_length])
+```
+
+For treasure island, this gives us 132454 blocks of 40 characters. Plenty of training data.
+
+Our final step is to vectorize our data, which chagnes it into the proper format that our network needs. 
+
+We can start by defining some blank vectors. Our input vector ```x``` will be three dimensional:
+- Size 1D: Amount of data. Each index will be the index of a piece of data.
+- Size 2D: Size of input vector. Each index will be the data of the piece.
+- Size 3D: # of possible characters. This will act as a "dummy variable", for the next possible character.
+
+What's a "dummy variable"? I'm glad you asked. Categorical data isn't quantitative. However, our vectors can only have numbers. Thus, it's up to us to make it quantitative. A "1" indicates that the categorical feature is present, while a "0" indicates that it isn't. 
+
+For us, the categorical features are characters. And, since only one character can be present in each character slot, we'll only ever have one "1", and 59 "0"s.
+
+Our output vector ```y``` will only by two dimensional, representing the index of a data piece and its output, not needing the input itself.
+
+```
+x = np.zeros((len(sentences), max_length, len(chars_list_sorted)), dtype=np.bool)
+y = np.zeros((len(sentences), len(chars)), dtype=np.bool)
+```
+
+Then, we can fill in these vectors with the actual data of what characters are present:
+
+```
+for i, sentence in enumerate(sentences):
+    for t, char in enumerate(chars_list_sorted):
+        x[i, t, char2index[char]] = 1
+    y[i, char2index[next_char[i]]] = 1
+```
+
+## Step 4: Building the network
+
+Now with all that out of the way, we can get to building the network. Like for a standard neural network, we'll be using tensorflow's sequential class, which just means a sequential (linear) stack of layers (e.g. input -> hidden -> hidden -> output).
+
+```
+model = tf.keras.Sequential()
+```
+
+We'll be using LSTMs

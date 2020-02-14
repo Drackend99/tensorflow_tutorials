@@ -187,7 +187,7 @@ Our final stop is to actually train the model. To do this, we'll first need to b
 
 The LSTM will create new text character by character. Each time it creates a new character, we'll want to sample the correct letter from. Our ```sample``` method will have two parameters:
 1. ```predictions```: The output neurons
-2. ```confidence```: The LSTM's confidence in its error. Note that while 1.0 is the most confident, 0.0 has more variety. It will produce some grammatical errors, but will give more novel results
+2. ```confidence```: The LSTM's confidence. Changing this will change how confident the LSTM has to be in its decision. Note that while 1.0+ is the most confident, 0.0 has more variety. It will produce some grammatical errors, but will give more novel results.
 
 Our sample function will essentially perform a **softmax** on the neural network's predictions. Thus, each output neuron becomes a **probability** of its letter. This is mostly just a math formula (the softmax), so it's not really important to understand the code here.
 
@@ -201,11 +201,41 @@ def sample(predictions, confidence=1.0):
     return np.argmax(probabilities)
 ```
 
-Next we can make the generator itself. It will be invoked at the end of an epoch.
+Next we can make the generator itself. It will be invoked at the end of an epoch. This block of code will be longer than usual, so I'll explain it through comments rather than line by line.
 
 ```
 def generate(epoch, _):
+    # Generate based off a random character string "seed"
     start_index = random.randint(0, len(preprocessed_text) - max_length - 1)
     
-    for confidence in 
+    # We'll generate text at 4 different confidence intervals
+    for confidence in [0.2, 0.5, 1.0, 1.2]:
+        # Place to put our results
+        generated = ""
+        # Generate the 40 character block that starts at the start_index
+        sentence = preprocessed_text[start_index: start_index + max_length]
+        # Add the seed to our generated text, so we know the context
+        generated += sentence
+        
+        # Generate the next 400 characters
+        for i in range(400):
+            # Build up the input sequence to the neural network (same process as our initial data generation)
+            x_prediction = np.zeros((1, max_legth, len(chars_list_sorted))
+            for t, char in enumerate(sentence):
+                # Initializing our input text, marking what letter we put
+                x_prediction[0, t, char2index[char]] = 1
+            
+            # Generate the output predictions for our "seed"
+            predictions = model.predict(x_prediction, verbose=0)[0]
+            # Call our generator method
+            next_index = sample(predictions, confidence)
+            # Grab whatever char sample predicted
+            next_char = index2char(next_index)
+            
+            # Add the char to our results
+            generated += next_char
+            # Move forward one character
+            sentence = sentence[1:] + next_char
 ```
+
+Just a warning, this will take a while. It took an hour for me, but my computer sucks.

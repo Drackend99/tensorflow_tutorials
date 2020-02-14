@@ -93,8 +93,8 @@ Please don't use list as your variable name though. That'll cause you many probl
 We can combine these two concepts to fill our dictionaries. We can use the ```dict()``` function to create it:
 
 ```
-char2index = dict((char, index) for char, index in enumerate(chars_list_sorted))
-index2char = dict((index, char) for char, index in enumerate(chars_list_sorted))
+char2index = dict((char, index) for index, char in enumerate(chars_list_sorted))
+index2char = dict((index, char) for index, char in enumerate(chars_list_sorted))
 ```
 
 We defined the ```(key, value)``` of our dictionary to be either ```(char, index)``` or ```(index, char)```. We fill it by iterating through our ```char_list_sorted```.
@@ -148,7 +148,7 @@ x = np.zeros((len(sentences), max_length, len(chars_list_sorted)), dtype=np.bool
 y = np.zeros((len(sentences), len(chars_list_sorted)), dtype=np.bool)
 ```
 
-Then, we can fill in these vectors with the actual data of what characters are present:
+Then, we can fill in these vectors with the actual data of what characters are present. We'll use our ```char2index``` from earlier:
 
 ```
 for i, sentence in enumerate(sentences):
@@ -165,4 +165,26 @@ Now with all that out of the way, we can get to building the network. Like for a
 model = tf.keras.Sequential()
 ```
 
-We'll be using LSTMs
+We'll add two layers here. The first will be an LSTM layer, whose input shape will be ```(input block length x possible characters)```, making it (40, 60). It will have 128 neurons. The second will be a dense layer with a neuron for each of the possible output characters.
+
+We can use the hyper-parameters (things you set at the beginning of a network) straight from Keras's examples.
+
+```
+model.add(LSTM(128, input_shape=(max_length, len(chars_list_sorted))))
+model.add(Dense(len(chars_list_sorted), activation='softmax'))
+```
+Additionally, we can add some standard Tensorflow mumbo-jumbo to optimize it and finally compile it.
+
+```
+optimizer = RMSprop(lr=0.01)
+model.compile(loss='categorical_crossentropy', optimizer=optimizer)
+```
+And our model is made!
+
+## Step 5: Generation and Training
+
+Our final stop is to actually train the model. To do this, we'll first need to build the method that actually generates the new text. Then, we can have it generate text and minimize the error in its generation.
+
+The LSTM will create new text character by character.
+
+

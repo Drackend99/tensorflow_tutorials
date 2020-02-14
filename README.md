@@ -145,7 +145,7 @@ Our output vector ```y``` will only by two dimensional, representing the index o
 
 ```
 x = np.zeros((len(sentences), max_length, len(chars_list_sorted)), dtype=np.bool)
-y = np.zeros((len(sentences), len(chars)), dtype=np.bool)
+y = np.zeros((len(sentences), len(chars_list_sorted)), dtype=np.bool)
 ```
 
 Then, we can fill in these vectors with the actual data of what characters are present:

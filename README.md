@@ -68,8 +68,9 @@ Our plan to do this is as follows:
 ```
 chars_set = set(preprocessed_text)
 chars_list = list(set(preprocessed_text))
-chars_list_sorted = chars_list.sort()
+chars_list_sorted = sorted(chars_list)
 ```
+Note we use ```sorted(chars_list)``` and not ```chars_list.sort()```. The ```.sort()``` method is *insitu*, meaning it does not return anything and sorts the list in place. We can't set a new variable equal to a ```list.sort()```, because the new variable would just be assigned ```None```.
 
 Now that we've got our list of characters that appear in the text, we can form 2 dictionaries: one for converting a character into its ID, and one for converting an ID into its character.
 
@@ -92,8 +93,8 @@ Please don't use list as your variable name though. That'll cause you many probl
 We can combine these two concepts to fill our dictionaries. We can use the ```dict()``` function to create it:
 
 ```
-char2index = dict((char, index) for char, index in enumerate(char_list_sorted))
-index2char = dict((index, char) for char, index in enumerate(char_list_sorted))
+char2index = dict((char, index) for char, index in enumerate(chars_list_sorted))
+index2char = dict((index, char) for char, index in enumerate(chars_list_sorted))
 ```
 
 We defined the ```(key, value)``` of our dictionary to be either ```(char, index)``` or ```(index, char)```. We fill it by iterating through our ```char_list_sorted```.
@@ -122,6 +123,6 @@ From here, we can begin to generate our sequences. We'll make two lists to fill.
 ```
 sentences = []
 next_chars = []
-for i in range(0, len(preprocessed_text) - max_length, step):
-    sentences.append(preprocessed_text[i:i+maxlen])
-    next_chars.append(preprocessed_text[i+maxlen])
+for i in range(0, len(preprocessed_text) - max_length, step_size):
+    sentences.append(preprocessed_text[i:i+max_length])
+    next_chars.append(preprocessed_text[i+max_length])
